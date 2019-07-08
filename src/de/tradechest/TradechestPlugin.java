@@ -139,8 +139,6 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
     private Location getLocation(String world, String loc) {
         String[] locs = loc.split(",");
         
-        System.out.println("hi");
-        
         World w = getServer().getWorld(world);
         int   x = Integer.parseInt(locs[0]);
         int   y = Integer.parseInt(locs[1]);
