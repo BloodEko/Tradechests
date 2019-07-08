@@ -1,0 +1,37 @@
+# --------------------------|
+# Tradechest configuration  |
+# --------------------------|
+
+# names:  https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Particle.html
+# range   how far away players will see the particles
+# qty:    how many particles to spawn
+# speed:  how fast they fly
+# height: how far above the block to spawn
+# delay:  how many ticks to wait, requires a restart to update.
+particle:
+  name: VILLAGER_HAPPY
+  range: 20
+  qty: 6
+  speed: 0
+  height: 0.9
+  delay: 25
+
+
+# The messages used by the plugin.
+message:
+  helptext:    "§7/tradechest (info | reload | item | help)"
+  showRadius:  "§7Partikel Radius: "
+  totalChest:  "§7Kisten insgesammt: "
+  loadedChest: "§7Geladene Kisten: "
+  reload:      "§aTradechest Configuration neu geladen."
+  gotItem:     "§aTauschkiste erhalten."
+  placedItem:  "§aTauschkiste plaziert."
+
+
+# The tradechest item.
+# Changes here will make older items no longer work.
+item:
+  name: Tauschkiste
+  lore:
+  - Diese besondere Kiste kann
+  - jeder Spieler öffnen.
