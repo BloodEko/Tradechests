@@ -139,6 +139,8 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
     private Location getLocation(String world, String loc) {
         String[] locs = loc.split(",");
         
+        System.out.println("hi");
+        
         World w = getServer().getWorld(world);
         int   x = Integer.parseInt(locs[0]);
         int   y = Integer.parseInt(locs[1]);
@@ -169,7 +171,7 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
         
         for (Player player : getServer().getOnlinePlayers()) {
             for (Location loc : chests) {
-                if (!intersects(player.getLocation(), loc, particleRange)) {
+                if (!inRange(player.getLocation(), loc)) {
                     continue;
                 }
                 if (loc.getBlock().getType() != Material.CHEST) {
@@ -187,7 +189,7 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
         remove.clear();
     }
     
-    public boolean intersects(Location loc1, Location loc2, int range) {
+    private boolean inRange(Location loc1, Location loc2) {
         if (loc1.getWorld() != loc2.getWorld()) {
             return false;
         }
