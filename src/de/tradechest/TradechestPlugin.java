@@ -315,7 +315,6 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
             
             return chests.contains(left.getLocation()) && chests.contains(right.getLocation());
         }
-        System.out.println("truee");
         return true;
     }
 }
