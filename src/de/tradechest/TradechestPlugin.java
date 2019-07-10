@@ -36,23 +36,23 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class TradechestPlugin extends JavaPlugin implements Listener {
 
-    public static HashSet<Location> chests = new HashSet<>();
-    public static HashSet<Location> render = new HashSet<>();
-    public static HashSet<Location> remove = new HashSet<>();
+    HashSet<Location> chests = new HashSet<>();
+    HashSet<Location> render = new HashSet<>();
+    HashSet<Location> remove = new HashSet<>();
     
     File              dataFile;
     YamlConfiguration dataConfig;
     
-    public static ItemStack  item = new ItemStack(Material.CHEST);
+    final  static ItemStack  item = new ItemStack(Material.CHEST);
     
-    public static Particle   particle;
-    public static int        particleRange;
-    public static int        particleQty;
-    public static double     particleSpeed;
-    public static double     particleHeight;
-    public static long       particleDelay;
+    public static TradechestPlugin instance;
     
-    public static JavaPlugin instance;
+    Particle   particle;
+    int        particleRange;
+    int        particleQty;
+    double     particleSpeed;
+    double     particleHeight;
+    long       particleDelay;
     
     
     @Override
@@ -70,7 +70,7 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
     }
     
     
-    public static void loadConfig() {
+    public void loadConfig() {
         //Config
         instance.saveDefaultConfig();
         instance.reloadConfig();
@@ -214,14 +214,14 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
         
         switch(args[0].toUpperCase()) {
             case "INFO":
-                sender.sendMessage(Messages.showRadius  + TradechestPlugin.particleRange);
+                sender.sendMessage(Messages.showRadius  + particleRange);
                 sender.sendMessage(Messages.totalChest  + chests.size());
                 sender.sendMessage(Messages.loadedChest + render.size());
                 return true;
             
             case "RELOAD":
                 sender.sendMessage(Messages.reload);
-                TradechestPlugin.loadConfig();
+                TradechestPlugin.instance.loadConfig();
                 return true;
             
             case "ITEM":
