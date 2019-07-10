@@ -11,6 +11,8 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
+import org.bukkit.block.DoubleChest;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -101,7 +103,7 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
                 list = new ArrayList<>();
                 map.put(loc.getWorld(), list);
             }
-            list.add(getString(loc));
+            list.add(asString(loc));
         }
 
         dataConfig.set("chests", null);
@@ -130,12 +132,12 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
         
         for (String world : sub.getKeys(false)) {
             for (String loc : sub.getStringList(world)) {
-                chests.add(getLocation(world, loc));
+                chests.add(asLocation(world, loc));
             }
         }
     }
     
-    private Location getLocation(String world, String loc) {
+    private Location asLocation(String world, String loc) {
         String[] locs = loc.split(",");
         
         World w = getServer().getWorld(world);
@@ -146,7 +148,7 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
         return new Location(w, x, y, z);
     }
     
-    private String getString(Location loc) {
+    private String asString(Location loc) {
         return loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ();
     }
     
@@ -168,7 +170,7 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
         
         for (Player player : getServer().getOnlinePlayers()) {
             for (Location loc : chests) {
-                if (!inRange(player.getLocation(), loc)) {
+                if (!intersects(player.getLocation(), loc)) {
                     continue;
                 }
                 if (loc.getBlock().getType() != Material.CHEST) {
@@ -186,7 +188,7 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
         remove.clear();
     }
     
-    private boolean inRange(Location loc1, Location loc2) {
+    private boolean intersects(Location loc1, Location loc2) {
         if (loc1.getWorld() != loc2.getWorld()) {
             return false;
         }
@@ -261,27 +263,24 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
         }
     }
     
-    
     @EventHandler(priority=EventPriority.LOWEST)
     public void onClickBlock(PlayerInteractEvent event) {
-        
-        // off hand packet, ignore.
-        if (event.getHand()   == EquipmentSlot.OFF_HAND 
-         || event.getAction() != Action.RIGHT_CLICK_BLOCK
-         || event.getPlayer().isSneaking()) {
-            return; 
-        }
+
         Block block = event.getClickedBlock();
         
-        if (block.getType() != Material.CHEST || !chests.contains(block.getLocation())) {
-            return;
-        }
-        if (!(block.getState() instanceof InventoryHolder)) {
-           chests.remove(block.getLocation());
-           return;
+        if ( event.getHand()   == EquipmentSlot.OFF_HAND     // off hand packet, ignore.
+         ||  event.getAction() != Action.RIGHT_CLICK_BLOCK
+         ||  block.getType()   != Material.CHEST 
+         ||  event.getPlayer().isSneaking()
+         || !chests.contains(block.getLocation())) {
+            return; 
         }
         
         Inventory inv = ((InventoryHolder) block.getState()).getInventory();
+        
+        if (!isSafe(inv.getHolder())) {
+            return;
+        }
         
         event.getPlayer().openInventory(inv);
         event.setCancelled(true);
@@ -305,6 +304,19 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
         if (chests.contains(event.getInventory().getLocation())) {
             event.setCancelled(false);
         }
+    }
+    
+    private boolean isSafe(InventoryHolder holder) {
+        
+        if (holder instanceof DoubleChest) {
+            DoubleChest chest = ((DoubleChest) holder);
+            Chest       left  = (Chest) chest.getLeftSide();
+            Chest       right = (Chest) chest.getRightSide();
+            
+            return chests.contains(left.getLocation()) && chests.contains(right.getLocation());
+        }
+        System.out.println("truee");
+        return true;
     }
 }
 
