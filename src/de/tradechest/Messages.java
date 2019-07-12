@@ -19,6 +19,9 @@ public class Messages {
     public static String       itemName;
     public static List<String> itemLore;
     
+    public static String loadWorldFail;
+    
+    
     public static void loadMessages(FileConfiguration conf) {
         helpText   = conf.getString("message.helptext");
         showRadius = conf.getString("message.showRadius");
@@ -32,5 +35,7 @@ public class Messages {
         itemMaterial = conf.getString("item.material");
         itemName     = conf.getString("item.name");
         itemLore     = conf.getStringList("item.lore");
+        
+        loadWorldFail = conf.getString("message.loadWorldFail");
     }
 }

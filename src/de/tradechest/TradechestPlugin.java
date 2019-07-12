@@ -57,9 +57,11 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         loadConfig();
-        loadChestData();
-        renderParticles();
         getServer().getPluginManager().registerEvents(this, this);
+        getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {  
+            loadChestData();
+            renderParticles();
+        }, 0L);
     }
     
     @Override
@@ -92,7 +94,9 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
         item.setItemMeta(meta);
     }
     
+    
     public void saveChestData() {
+        // sort by World
         HashMap<World, List<String>> map = new HashMap<>();
         List<String> list;
         
@@ -103,15 +107,14 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
                 map.put(loc.getWorld(), list);
             }
             list.add(asString(loc));
-        }
-
-        dataConfig.set("chests", null);
+        } 
         
+        // set data
         for (World world : map.keySet()) {
             dataConfig.set("chests." + world.getName(), map.get(world));
         }
         
-        
+        // save file
         try {
             dataConfig.save(dataFile);
         } catch (IOException e) {
@@ -120,36 +123,56 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
     }
     
     
+    private String asString(Location loc) {
+        return loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ();
+    }
+    
+    
+    
     public void loadChestData() {
         dataFile   = new File(getDataFolder(), "data.yml");
         dataConfig = YamlConfiguration.loadConfiguration(dataFile);
 
-        ConfigurationSection sub = dataConfig.getConfigurationSection("chests");
-        if (sub == null) {
+        ConfigurationSection worlds = dataConfig.getConfigurationSection("chests");
+        if (worlds == null) {
             return;
         }
         
-        for (String world : sub.getKeys(false)) {
-            for (String loc : sub.getStringList(world)) {
-                chests.add(asLocation(world, loc));
-            }
+        for (String name : worlds.getKeys(false)) {
+            loadWorld(name, worlds.getStringList(name));
         }
     }
     
-    private Location asLocation(String world, String loc) {
+    
+    private void loadWorld(String name, List<String> locs) {
+        World world = getServer().getWorld(name);
+        
+        if (world == null) {
+            warn(Messages.loadWorldFail + name);
+            return;
+        }
+        
+        for (String loc : locs) {
+            chests.add(asLocation(world, loc));
+        }
+    }
+    
+    
+    private Location asLocation(World world, String loc) {
         String[] locs = loc.split(",");
         
-        World w = getServer().getWorld(world);
         int   x = Integer.parseInt(locs[0]);
         int   y = Integer.parseInt(locs[1]);
         int   z = Integer.parseInt(locs[2]);
         
-        return new Location(w, x, y, z);
+        return new Location(world, x, y, z);
     }
     
-    private String asString(Location loc) {
-        return loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ();
+    
+    private void warn(String msg) {
+        getLogger().info("ERROR "+ msg);
     }
+    
     
     
     public void renderParticles() {
@@ -187,6 +210,7 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
         remove.clear();
     }
     
+    
     private boolean intersects(Location loc, Location chestLoc) {
         if (loc.getWorld() != chestLoc.getWorld()) {
             return false;
@@ -194,6 +218,7 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
         return loc.distanceSquared(chestLoc) < particleSqrt;
     }
 
+    
     
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String name, String[] args) {
@@ -228,6 +253,7 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
     }
     
 
+    
     @EventHandler(priority=EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
         

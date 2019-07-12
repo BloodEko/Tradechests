@@ -16,6 +16,14 @@ particle:
   height: 0.9
   delay: 25
 
+# The tradechest item.
+# Changes here will make older items no longer work.
+item:
+  name: Tauschkiste
+  lore:
+  - Diese besondere Kiste kann
+  - jeder Spieler öffnen.
+
 
 # The messages used by the plugin.
 message:
@@ -26,12 +34,4 @@ message:
   reload:      "§aTradechest Configuration neu geladen."
   gotItem:     "§aTauschkiste erhalten."
   placedItem:  "§aTauschkiste plaziert."
-
-
-# The tradechest item.
-# Changes here will make older items no longer work.
-item:
-  name: Tauschkiste
-  lore:
-  - Diese besondere Kiste kann
-  - jeder Spieler öffnen.
+  loadWorldFail: "Welt mit Tauschkisten konnte nicht gefunden werden: "
