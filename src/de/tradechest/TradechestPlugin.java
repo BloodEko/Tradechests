@@ -212,10 +212,8 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
     
     
     private boolean intersects(Location loc, Location chestLoc) {
-        if (loc.getWorld() != chestLoc.getWorld()) {
-            return false;
-        }
-        return loc.distanceSquared(chestLoc) < particleSqrt;
+        return loc.getWorld() == chestLoc.getWorld()
+            && loc.distanceSquared(chestLoc) < particleSqrt;
     }
 
     
