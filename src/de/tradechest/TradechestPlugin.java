@@ -35,7 +35,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 
 public class TradechestPlugin extends JavaPlugin implements Listener {
-
+    
+    ItemStack         item   = new ItemStack(Material.CHEST);
+    
     HashSet<Location> chests = new HashSet<>();
     HashSet<Location> render = new HashSet<>();
     HashSet<Location> remove = new HashSet<>();
@@ -43,13 +45,10 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
     File              dataFile;
     YamlConfiguration dataConfig;
     
-    final  static ItemStack  item = new ItemStack(Material.CHEST);
-    
-    public static TradechestPlugin instance;
-    
     Particle   particle;
-    int        particleRange;
     int        particleQty;
+    int        particleRange;
+    double     particleSqrt;
     double     particleSpeed;
     double     particleHeight;
     long       particleDelay;
@@ -57,7 +56,6 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
     
     @Override
     public void onEnable() {
-        instance = this;
         loadConfig();
         loadChestData();
         renderParticles();
@@ -72,19 +70,20 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
     
     public void loadConfig() {
         //Config
-        instance.saveDefaultConfig();
-        instance.reloadConfig();
+        saveDefaultConfig();
+        reloadConfig();
         
         //Messages
-        Messages.loadMessages(instance.getConfig());
+        Messages.loadMessages(getConfig());
         
         //Particle
-        particle = Particle.valueOf(instance.getConfig().getString("particle.name"));
-        particleRange  = instance.getConfig().getInt    ("particle.range");
-        particleQty    = instance.getConfig().getInt    ("particle.qty");
-        particleSpeed  = instance.getConfig().getDouble ("particle.speed");
-        particleHeight = instance.getConfig().getDouble ("particle.height");
-        particleDelay  = instance.getConfig().getLong   ("particle.delay");
+        particle = Particle.valueOf(getConfig().getString("particle.name"));
+        particleQty    = getConfig().getInt    ("particle.qty");
+        particleSpeed  = getConfig().getDouble ("particle.speed");
+        particleHeight = getConfig().getDouble ("particle.height");
+        particleDelay  = getConfig().getLong   ("particle.delay");
+        particleRange  = getConfig().getInt    ("particle.range");
+        particleSqrt   = particleRange * particleRange;
         
         //Item
         ItemMeta meta = item.getItemMeta();
@@ -188,19 +187,11 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
         remove.clear();
     }
     
-    private boolean intersects(Location loc1, Location loc2) {
-        if (loc1.getWorld() != loc2.getWorld()) {
+    private boolean intersects(Location loc, Location chestLoc) {
+        if (loc.getWorld() != chestLoc.getWorld()) {
             return false;
         }
-        
-        double absX = loc1.getX() - loc2.getX();
-        double absY = loc1.getY() - loc2.getY();
-        double absZ = loc1.getZ() - loc2.getZ();
-        
-        double abs1 = absX*absX + absY*absY + absZ*absZ;
-        double abs2 = particleRange * particleRange;
-
-        return abs1 < abs2;
+        return loc.distanceSquared(chestLoc) < particleSqrt;
     }
 
     
@@ -221,7 +212,7 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
             
             case "RELOAD":
                 sender.sendMessage(Messages.reload);
-                TradechestPlugin.instance.loadConfig();
+                loadConfig();
                 return true;
             
             case "ITEM":
@@ -262,6 +253,7 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
             event.getPlayer().sendMessage(Messages.placedItem);
         }
     }
+    
     
     @EventHandler(priority=EventPriority.LOWEST)
     public void onClickBlock(PlayerInteractEvent event) {
@@ -305,6 +297,7 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
             event.setCancelled(false);
         }
     }
+    
     
     private boolean isSafe(InventoryHolder holder) {
         
