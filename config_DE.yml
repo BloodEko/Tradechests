@@ -27,11 +27,12 @@ item:
 
 # Alle genutzen Nachrichten.
 message:
-  helptext:    "§7/tradechest (info | reload | item | help)"
-  showRadius:  "§7Partikel Radius: "
-  totalChest:  "§7Geladene Kisten: "
-  loadedChest: "§7Aktive Kisten: "
-  reload:      "§aTradechest Konfiguration neu geladen."
-  gotItem:     "§aTauschkiste erhalten."
-  placedItem:  "§aTauschkiste plaziert."
+  helptext:     "§7/tradechest (info | reload | item | help)"
+  infoHeadLine: "§7--- Tradechest info ---"
+  showRadius:   "§7Partikel Radius: §f"
+  totalChest:   "§7Geladene Kisten: "§f"
+  loadedChest:  "§7Aktive Kisten: §f"
+  reload:       "§aTradechest Konfiguration neu geladen."
+  gotItem:      "§aTauschkiste erhalten."
+  placedItem:   "§aTauschkiste plaziert."
   loadWorldFail: "Welt mit Tauschkisten konnte nicht gefunden/geladen werden: "

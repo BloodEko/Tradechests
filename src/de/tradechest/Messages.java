@@ -12,6 +12,7 @@ public class Messages {
     public static String gotItem;
     public static String placedItem;
     
+    public static String infoHeadLine;
     public static String totalChest;
     public static String loadedChest;
     
@@ -29,6 +30,7 @@ public class Messages {
         gotItem    = conf.getString("message.gotItem");
         placedItem = conf.getString("message.placedItem");
         
+        infoHeadLine = conf.getString("message.infoHeadLine");
         totalChest   = conf.getString("message.totalChest");
         loadedChest  = conf.getString("message.loadedChest");
         

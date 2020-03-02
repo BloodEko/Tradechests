@@ -27,11 +27,12 @@ item:
 
 # The messages used by the plugin.
 message:
-  helptext:    "§7/tradechest (info | reload | item | help)"
-  showRadius:  "§7Particle radius: "
-  totalChest:  "§7Chests loaded: "
-  loadedChest: "§7Chests active: "
-  reload:      "§aTradechest configuration reloaded."
-  gotItem:     "§aTradechest received."
-  placedItem:  "§aTradechest placed."
+  helptext:     "§7/tradechest (info | reload | item | help)"
+  infoHeadLine: "§7--- Tradechest info ---"
+  showRadius:   "§7Particle radius: §f"
+  totalChest:   "§7Chests loaded: §f"
+  loadedChest:  "§7Chests active: §f"
+  reload:       "§aTradechest configuration reloaded."
+  gotItem:      "§aTradechest received."
+  placedItem:   "§aTradechest placed."
   loadWorldFail: "World with tradechest could not be found/loaded: "

@@ -244,6 +244,7 @@ public class TradechestPlugin extends JavaPlugin implements TabCompleter, Listen
         
         switch(args[0].toUpperCase()) {
             case "INFO":
+                sender.sendMessage(Messages.infoHeadLine);
                 sender.sendMessage(Messages.showRadius  + particleRange);
                 sender.sendMessage(Messages.totalChest  + chests.size());
                 sender.sendMessage(Messages.loadedChest + render.size());
