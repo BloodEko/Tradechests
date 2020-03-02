@@ -18,6 +18,7 @@ import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -40,7 +41,7 @@ import org.bukkit.plugin.java.JavaPlugin;
  * Adds new chests to the server which can be opened everywhere 
  * and are displayed with particles to near players.
  */
-public class TradechestPlugin extends JavaPlugin implements Listener {
+public class TradechestPlugin extends JavaPlugin implements TabCompleter, Listener {
     
     ItemStack chestItem = new ItemStack(Material.CHEST);
 
@@ -63,6 +64,7 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         loadConfig();
+        getCommand("tradechest").setTabCompleter(this);
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
             loadChestData();
@@ -262,6 +264,19 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
 
         sender.sendMessage(Messages.helpText);
         return true;
+    }
+    
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        List<String> list = new ArrayList<>();
+        String[] commands = {"info", "reload", "item", "help"};
+        
+        for (String cmd : commands) {
+            if (cmd.startsWith(args[0])) {
+                list.add(cmd);
+            }
+        }
+        return list;
     }
     
 
