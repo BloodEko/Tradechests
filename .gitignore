@@ -2,3 +2,7 @@
 .classpath
 .project
 *.class
+/target/
+.settings/org.eclipse.m2e.core.prefs
+dependency-reduced-pom.xml
+.settings/org.eclipse.jdt.core.prefs
