@@ -1,10 +1,13 @@
 package de.tradechest;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -33,18 +36,14 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
-
+/**
+ * Adds new chests to the server which can be opened everywhere 
+ * and are displayed with particles to near players.
+ */
 public class TradechestPlugin extends JavaPlugin implements Listener {
     
-    ItemStack         item   = new ItemStack(Material.CHEST);
-    
-    HashSet<Location> chests = new HashSet<>();
-    HashSet<Location> render = new HashSet<>();
-    HashSet<Location> remove = new HashSet<>();
-    
-    File              dataFile;
-    YamlConfiguration dataConfig;
-    
+    ItemStack chestItem = new ItemStack(Material.CHEST);
+
     Particle   particle;
     int        particleQty;
     int        particleRange;
@@ -53,12 +52,19 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
     double     particleHeight;
     long       particleDelay;
     
+    Set<Location> chests = new HashSet<>();
+    Set<Location> render = new HashSet<>();
+    Set<Location> remove = new HashSet<>();
+    
+    File              dataFile;
+    YamlConfiguration dataConfig;
+    
     
     @Override
     public void onEnable() {
         loadConfig();
         getServer().getPluginManager().registerEvents(this, this);
-        getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {  
+        getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
             loadChestData();
             renderParticles();
         }, 0L);
@@ -69,52 +75,52 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
         saveChestData();
     }
     
-    
+    /**
+     * Creates the default config.yml file. If it already exists, reloads
+     * that and overrides current settings, the changes are used directly.
+     */
     public void loadConfig() {
-        //Config
         saveDefaultConfig();
         reloadConfig();
         
-        //Messages
         Messages.loadMessages(getConfig());
         
-        //Particle
         particle = Particle.valueOf(getConfig().getString("particle.name"));
-        particleQty    = getConfig().getInt    ("particle.qty");
-        particleSpeed  = getConfig().getDouble ("particle.speed");
-        particleHeight = getConfig().getDouble ("particle.height");
-        particleDelay  = getConfig().getLong   ("particle.delay");
-        particleRange  = getConfig().getInt    ("particle.range");
+        particleQty    = getConfig().getInt("particle.qty");
+        particleSpeed  = getConfig().getDouble("particle.speed");
+        particleHeight = getConfig().getDouble("particle.height");
+        particleDelay  = getConfig().getLong("particle.delay");
+        particleRange  = getConfig().getInt("particle.range");
         particleSqrt   = particleRange * particleRange;
         
-        //Item
-        ItemMeta meta = item.getItemMeta();
+        ItemMeta meta = chestItem.getItemMeta();
         meta.setDisplayName(Messages.itemName);
         meta.setLore(Messages.itemLore);
-        item.setItemMeta(meta);
+        chestItem.setItemMeta(meta);
     }
     
-    
+    /**
+     * Clears data.yml and then writes a copy
+     * of the current loaded chestdata to it.
+     */
     public void saveChestData() {
-        // sort by World
-        HashMap<World, List<String>> map = new HashMap<>();
+        Map<World, List<String>> map = new HashMap<>();
         List<String> list;
         
-        for (Location loc : chests) {
+        for (Location loc : chests) { // sort by World
             list = map.get(loc.getWorld());
             if (list == null) {
                 list = new ArrayList<>();
                 map.put(loc.getWorld(), list);
             }
             list.add(asString(loc));
-        } 
-        
-        // set data
-        for (World world : map.keySet()) {
-            dataConfig.set("chests." + world.getName(), map.get(world));
         }
         
-        // save file
+        dataConfig.set("chests", null);
+        for (World world : map.keySet()) { 
+            dataConfig.set("chests." + world.getName(), map.get(world));
+        }
+           
         try {
             dataConfig.save(dataFile);
         } catch (IOException e) {
@@ -123,12 +129,10 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
     }
     
     
-    private String asString(Location loc) {
-        return loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ();
-    }
-    
-    
-    
+    /**
+     * Loads the chestdata from each world from data.yml into ram.
+     * Doesn't clear the current data, so only useful during initialization.
+     */
     public void loadChestData() {
         dataFile   = new File(getDataFolder(), "data.yml");
         dataConfig = YamlConfiguration.loadConfiguration(dataFile);
@@ -168,14 +172,21 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
         return new Location(world, x, y, z);
     }
     
+    private String asString(Location loc) {
+        return loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ();
+    }
+    
     
     private void warn(String msg) {
         getLogger().info("ERROR "+ msg);
     }
     
     
-    
-    public void renderParticles() {
+    /**
+     * Starts a new Task which renders and displays particles
+     * above all registered chests to near players.
+     */
+    private void renderParticles() {
         getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
 
             render.clear();
@@ -187,12 +198,15 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
         }, 10L, particleDelay);
     }
     
-    
-    public void renderLocations() {
-        
+    /**
+     * Defines all locations where particles should be spawned.
+     * Broken chests which were deleted externally with WorldEdit
+     * or other tools are automatically removed.
+     */
+    private void renderLocations() {
         for (Player player : getServer().getOnlinePlayers()) {
             for (Location loc : chests) {
-                if (!intersects(player.getLocation(), loc)) {
+                if (!isNear(player.getLocation(), loc)) {
                     continue;
                 }
                 if (loc.getBlock().getType() != Material.CHEST) {
@@ -211,7 +225,7 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
     }
     
     
-    private boolean intersects(Location loc, Location chestLoc) {
+    private boolean isNear(Location loc, Location chestLoc) {
         return loc.getWorld() == chestLoc.getWorld()
             && loc.distanceSquared(chestLoc) < particleSqrt;
     }
@@ -241,7 +255,7 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
             case "ITEM":
                 if (sender instanceof Player) {
                     sender.sendMessage(Messages.gotItem);
-                    ((Player) sender).getInventory().addItem(item);
+                    ((Player) sender).getInventory().addItem(chestItem);
                     return true;
                 }
         }
@@ -262,7 +276,7 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
             chests.remove(loc);
             
             event.setDropItems(false);
-            block.getWorld().dropItem(loc, item);
+            block.getWorld().dropItem(loc, chestItem);
         }
     }
     
@@ -270,9 +284,9 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
     @EventHandler(priority=EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
         
-        ItemStack val = event.getItemInHand();
+        ItemStack item = event.getItemInHand();
         
-        if (val.getType() == Material.CHEST && item.isSimilar(val)) {
+        if (item.getType() == Material.CHEST && chestItem.isSimilar(item)) {
             chests.add(event.getBlock().getLocation());
             event.getPlayer().sendMessage(Messages.placedItem);
         }
@@ -322,7 +336,10 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
         }
     }
     
-    
+    /**
+     * Access to a chest is considered safe, when both
+     * sides are registered as tradechest.
+     */
     private boolean isSafe(InventoryHolder holder) {
         
         if (holder instanceof DoubleChest) {
@@ -335,6 +352,5 @@ public class TradechestPlugin extends JavaPlugin implements Listener {
         return true;
     }
 }
-
 
 
