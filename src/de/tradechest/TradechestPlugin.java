@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -53,6 +54,8 @@ public class TradechestPlugin extends JavaPlugin implements TabCompleter, Listen
     double     particleHeight;
     long       particleDelay;
     
+    int clicks;
+    
     Set<Location> chests = new HashSet<>();
     Set<Location> render = new HashSet<>();
     Set<Location> remove = new HashSet<>();
@@ -64,6 +67,7 @@ public class TradechestPlugin extends JavaPlugin implements TabCompleter, Listen
     @Override
     public void onEnable() {
         loadConfig();
+        loadMetrics();
         getCommand("tradechest").setTabCompleter(this);
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
@@ -133,7 +137,7 @@ public class TradechestPlugin extends JavaPlugin implements TabCompleter, Listen
     
     /**
      * Loads the chestdata from each world from data.yml into ram.
-     * Doesn't clear the current data, so only useful during initialization.
+     * Doesn't clear the current data, so only useful during startup.
      */
     public void loadChestData() {
         dataFile   = new File(getDataFolder(), "data.yml");
@@ -181,6 +185,13 @@ public class TradechestPlugin extends JavaPlugin implements TabCompleter, Listen
     
     private void warn(String msg) {
         getLogger().info("ERROR "+ msg);
+    }
+    
+    private void loadMetrics() {
+        Metrics metrics = new Metrics(this, 6666);
+        metrics.addCustomChart(new Metrics.SingleLineChart("clicks", () -> clicks));
+        metrics.addCustomChart(new Metrics.SingleLineChart("chests_loaded", () -> chests.size()));
+        metrics.addCustomChart(new Metrics.SingleLineChart("chests_active", () -> render.size()));
     }
     
     
@@ -327,6 +338,7 @@ public class TradechestPlugin extends JavaPlugin implements TabCompleter, Listen
         if (allowAccess(inv.getHolder())) {
             event.getPlayer().openInventory(inv);
             event.setCancelled(true);
+            clicks++;
         }
     }
     

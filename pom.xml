@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>Tradechests</groupId>
   <artifactId>Tradechests</artifactId>
-  <version>0.0.1</version>
+  <version>1.0</version>
   
   <build>
     <sourceDirectory>src</sourceDirectory>
@@ -39,7 +39,7 @@
 	      <relocations>
 	        <relocation>
 	          <pattern>org.bstats</pattern>
-	          <shadedPattern>de.webrush.bstats</shadedPattern>
+	          <shadedPattern>de.tradechest.bstats</shadedPattern>
 	        </relocation>
 	      </relocations>
 	    </configuration>

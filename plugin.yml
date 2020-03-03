@@ -1,5 +1,5 @@
 name: Tradechest
-version: 0.7
+version: 1.0
 author: BloodEko
 main: de.tradechest.TradechestPlugin
 commands:
