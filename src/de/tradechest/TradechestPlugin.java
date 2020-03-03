@@ -324,12 +324,10 @@ public class TradechestPlugin extends JavaPlugin implements TabCompleter, Listen
         
         Inventory inv = ((InventoryHolder) block.getState()).getInventory();
         
-        if (!isSafe(inv.getHolder())) {
-            return;
+        if (allowAccess(inv.getHolder())) {
+            event.getPlayer().openInventory(inv);
+            event.setCancelled(true);
         }
-        
-        event.getPlayer().openInventory(inv);
-        event.setCancelled(true);
     }
     
     
@@ -337,7 +335,7 @@ public class TradechestPlugin extends JavaPlugin implements TabCompleter, Listen
     public void onOpenInvLow(InventoryOpenEvent event) {
         
         // let other plugins ignore the event
-        if (chests.contains(event.getInventory().getLocation())) {
+        if (allowAccess(event.getInventory().getHolder())) {
             event.setCancelled(true);
         }
     }
@@ -347,25 +345,31 @@ public class TradechestPlugin extends JavaPlugin implements TabCompleter, Listen
     public void onOpenInvHigh(InventoryOpenEvent event) {
         
         // finally allow opening
-        if (chests.contains(event.getInventory().getLocation())) {
+        if (allowAccess(event.getInventory().getHolder())) {
             event.setCancelled(false);
         }
     }
     
     /**
-     * Access to a chest is considered safe, when both
-     * sides are registered as tradechest.
+     * Access is considered safe when it is a single registered Chest,
+     * or both locations of a DoubleChest are registered.
      */
-    private boolean isSafe(InventoryHolder holder) {
+    private boolean allowAccess(InventoryHolder holder) {
+        
+        if (holder instanceof Chest) {
+            return chests.contains(holder.getInventory().getLocation());
+        }
         
         if (holder instanceof DoubleChest) {
             DoubleChest chest = ((DoubleChest) holder);
             Chest       left  = (Chest) chest.getLeftSide();
             Chest       right = (Chest) chest.getRightSide();
             
-            return chests.contains(left.getLocation()) && chests.contains(right.getLocation());
+            return chests.contains(left.getLocation()) 
+                && chests.contains(right.getLocation());
         }
-        return true;
+        
+        return false;
     }
 }
 
